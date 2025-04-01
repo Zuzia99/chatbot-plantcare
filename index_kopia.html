@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot Roślinny</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+    #chat-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    #chat-log {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 15px;
+      background-color: #fafafa;
+    }
+    .message {
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 5px;
+    }
+    .user-message {
+      background-color: #d0ebff;
+      text-align: right;
+    }
+    .bot-message {
+      background-color: #d3f9d8;
+      text-align: left;
+    }
+    #question {
+      width: 80%;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #send-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <h2>Chatbot Roślinny</h2>
+    <div id="chat-log"></div>
+    <input type="text" id="question" placeholder="Wpisz swoje pytanie..." />
+    <button id="send-btn">Wyślij</button>
+  </div>
+
+  <script>
+    const sendBtn = document.getElementById('send-btn');
+    const questionInput = document.getElementById('question');
+    const chatLog = document.getElementById('chat-log');
+
+    sendBtn.addEventListener('click', async () => {
+      const question = questionInput.value.trim();
+      if (!question) return;
+
+      // Dodaj wiadomość użytkownika do czatu
+      const userMsgDiv = document.createElement('div');
+      userMsgDiv.className = 'message user-message';
+      userMsgDiv.innerText = question;
+      chatLog.appendChild(userMsgDiv);
+      chatLog.scrollTop = chatLog.scrollHeight;
+
+      // Wyślij zapytanie do API (zakładamy, że Twój serwer działa na localhost:5000)
+      try {
+        const response = await fetch('http://localhost:5000/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message: question })
+        });
+        const data = await response.json();
+
+        // Dodaj odpowiedź bota do czatu
+        const botMsgDiv = document.createElement('div');
+        botMsgDiv.className = 'message bot-message';
+        botMsgDiv.innerText = data.response || 'Brak odpowiedzi.';
+        chatLog.appendChild(botMsgDiv);
+        chatLog.scrollTop = chatLog.scrollHeight;
+      } catch (error) {
+        console.error('Błąd podczas wysyłania zapytania:', error);
+      }
+
+      // Wyczyść pole input
+      questionInput.value = '';
+      questionInput.focus();
+    });
+  </script>
+</body>
+</html>

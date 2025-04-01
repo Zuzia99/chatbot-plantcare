@@ -1,0 +1,117 @@
+Krok 1: Przygotowanie repozytorium na GitHub
+Zainicjuj repozytorium w swoim projekcie
+Jeśli jeszcze tego nie zrobiłaś, otwórz CMD (lub Git Bash) i przejdź do katalogu projektu, np.:
+
+bash
+Kopiuj
+Edytuj
+cd D:\Wordpress\ChatbotPlantcare
+Zainicjuj repozytorium Git:
+
+bash
+Kopiuj
+Edytuj
+git init
+Dodaj wszystkie pliki:
+
+bash
+Kopiuj
+Edytuj
+git add .
+Zrób pierwszy commit:
+
+bash
+Kopiuj
+Edytuj
+git commit -m "Initial commit for chatbot backend"
+Utwórz nowe repozytorium na GitHub
+Zaloguj się na swoje konto GitHub, kliknij „New repository” i utwórz repozytorium (np. nazwij je chatbot-backend).
+
+Połącz lokalne repozytorium z GitHub:
+
+bash
+Kopiuj
+Edytuj
+git remote add origin https://github.com/twoje_konto/chatbot-backend.git
+git push -u origin master
+Krok 2: Przygotowanie projektu do wdrożenia
+Upewnij się, że masz plik requirements.txt
+W terminalu wpisz:
+
+bash
+Kopiuj
+Edytuj
+pip freeze > requirements.txt
+Upewnij się, że w pliku znajdują się wszystkie niezbędne biblioteki (np. flask, requests, flask-cors).
+
+Utwórz plik Procfile
+W katalogu głównym projektu utwórz plik bez rozszerzenia o nazwie Procfile i umieść w nim jedną linię:
+
+makefile
+Kopiuj
+Edytuj
+web: gunicorn app:app
+Jeśli Twój główny plik backendu to app.py i instancja Flask nazywa się app, ta linia poinformuje Render, jak uruchomić Twoją aplikację.
+
+Krok 3: Wdrożenie na Render
+Zaloguj się na Render
+Przejdź na Render.com i zaloguj się na swoje konto.
+
+Kliknij "New" → "Web Service"
+W panelu Render wybierz opcję „New Web Service”.
+
+Podłącz swoje repozytorium GitHub
+Render poprosi Cię o połączenie z GitHubem – wybierz repozytorium, które właśnie utworzyłaś (np. chatbot-backend).
+
+Skonfiguruj ustawienia aplikacji:
+
+Environment: Wybierz „Python 3” (Render wykryje wersję, ale możesz ją ustawić ręcznie, np. Python 3.12).
+
+Build Command: Upewnij się, że masz komendę instalującą zależności, np.:
+
+bash
+Kopiuj
+Edytuj
+pip install -r requirements.txt
+Start Command: Upewnij się, że Procfile jest poprawnie skonfigurowany (Render użyje komendy z Procfile, czyli gunicorn app:app).
+
+Branch: Wybierz gałąź, którą chcesz wdrożyć (np. master lub main).
+
+Wdróż aplikację
+Kliknij „Create Web Service”. Render automatycznie zbuduje i wdroży Twoją aplikację. Po zakończeniu procesu Render poda Ci publiczny adres URL, np. https://nazwa-aplikacji.onrender.com.
+
+Skonfiguruj zmienne środowiskowe (jeśli są potrzebne)
+W ustawieniach aplikacji na Render możesz dodać zmienne środowiskowe (np. token API), jeśli Twój kod ich wymaga.
+
+Krok 4: Podpięcie frontendu do nowego backendu
+Otwórz plik index.html (frontendu), który masz na Infinityfree.
+
+Zmień adres URL w funkcji fetch w JavaScript na adres, który podał Render. Na przykład, jeśli adres Twojej aplikacji to https://nazwa-aplikacji.onrender.com, zmień fragment:
+
+js
+Kopiuj
+Edytuj
+fetch('http://localhost:5000/chat', { ... })
+na:
+
+js
+Kopiuj
+Edytuj
+fetch('https://nazwa-aplikacji.onrender.com/chat', { ... })
+Zapisz zmiany na stronie i przetestuj, czy frontend poprawnie komunikuje się z backendem.
+
+Krok 5: Testowanie i debugowanie
+Otwórz stronę na Infinityfree – Twoja strona powinna teraz wysyłać zapytania do nowego backendu działającego na Render.
+
+Sprawdź, czy chatbot odpowiada – w przypadku problemów, możesz sprawdzić logi na Render w panelu "Logs".
+
+Podsumowanie
+Utworzyłaś repozytorium Git na GitHubie i wypchnęłaś kod.
+
+Dodałaś pliki requirements.txt i Procfile.
+
+Wdrożyłaś aplikację na Render, konfigurując ustawienia (Build Command, Start Command, zmienne środowiskowe).
+
+Zmieniłaś adres URL w swoim froncie, by kierował zapytania do nowego backendu.
+
+To wszystko, co potrzebne do wdrożenia. Jeśli napotkasz jakiekolwiek problemy na którymkolwiek etapie, daj znać, a pomogę rozwiązać szczegóły!
