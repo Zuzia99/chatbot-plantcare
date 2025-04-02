@@ -41,6 +41,11 @@ HEADERS = {
 app = Flask(__name__)
 CORS(app)
 
+# Domyślny routing do strony głównej
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "Witaj w aplikacji Chatbot Plantcare!"})
+
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
@@ -96,4 +101,4 @@ Asystent:"""
         return jsonify({"error": "Wewnętrzny błąd serwera", "details": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
