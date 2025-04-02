@@ -64,30 +64,44 @@
     const questionInput = document.getElementById('question');
     const chatLog = document.getElementById('chat-log');
 
+    // Funkcja escape'ująca dane HTML
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function (match) {
+        const escape = {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        };
+        return escape[match];
+      });
+    }
+
     async function sendMessage() {
       const question = questionInput.value.trim();
       if (!question) return;
 
-      // Dodaj wiadomość użytkownika do czatu
+      // Dodaj wiadomość użytkownika do czatu (zabezpieczona przed XSS)
       const userMsgDiv = document.createElement('div');
       userMsgDiv.className = 'message user-message';
-      userMsgDiv.innerText = question;
+      userMsgDiv.innerText = escapeHtml(question); // Escape'owanie wiadomości użytkownika
       chatLog.appendChild(userMsgDiv);
       chatLog.scrollTop = chatLog.scrollHeight;
 
-      // Wyślij zapytanie do API (zakładamy, że Twój serwer działa na localhost:5000)
+      // Wyślij zapytanie do API (zakładamy, że Twój serwer działa na odpowiednim URL)
       try {
-        const response = await fetch('http://localhost:5000/chat', {
+        const response = await fetch('https://chatbot-plantcare-6sxz.onrender.com/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: question })
         });
         const data = await response.json();
 
-        // Dodaj odpowiedź bota do czatu
+        // Dodaj odpowiedź bota do czatu (zabezpieczona przed XSS)
         const botMsgDiv = document.createElement('div');
         botMsgDiv.className = 'message bot-message';
-        botMsgDiv.innerText = data.response || 'Brak odpowiedzi.';
+        botMsgDiv.innerText = escapeHtml(data.response || 'Brak odpowiedzi.'); // Escape'owanie odpowiedzi bota
         chatLog.appendChild(botMsgDiv);
         chatLog.scrollTop = chatLog.scrollHeight;
       } catch (error) {
