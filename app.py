@@ -73,8 +73,10 @@ Asystent:"""
             }
         }
 
-        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=10)
-
+        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=60)
+        print("Status response:", response.status_code)
+        print("Response text:", response.text)
+        
         if response.status_code != 200:
             return jsonify({
                 "error": f"Błąd API Hugging Face: {response.status_code}",
