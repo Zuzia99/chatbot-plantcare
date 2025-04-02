@@ -3,15 +3,34 @@ import requests
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
+from pymongo import MongoClient
+from pymongo.errors import ConfigurationError
 
 # Załaduj zmienne środowiskowe (jeśli używasz .env lokalnie)
 load_dotenv()
 
+# Sprawdzenie, czy zmienna MONGODB_URI została załadowana poprawnie
+MONGODB_URI = os.getenv("MONGODB_URI")
+print("MONGODB_URI:", MONGODB_URI)  # Sprawdź, czy zmienna jest wczytywana poprawnie
+
+# Zmienne API
 API_TOKEN = os.getenv("API_TOKEN")
 MODEL_NAME = os.getenv("MODEL_NAME")
 
 if not API_TOKEN or not MODEL_NAME:
     raise ValueError("Brak wymaganych zmiennych środowiskowych: API_TOKEN lub MODEL_NAME")
+
+if not MONGODB_URI:
+    raise ValueError("Brak zmiennej środowiskowej: MONGODB_URI")
+
+# Nawiąż połączenie z MongoDB
+try:
+    client = MongoClient(MONGODB_URI)
+    db = client.get_database()  # Wybierz bazę danych, domyślnie jest to pierwsza baza
+    print("Połączenie z MongoDB udane!")
+except Exception as e:
+    print(f"Błąd połączenia z MongoDB: {e}")
+    raise
 
 API_URL = f"https://api-inference.huggingface.co/models/{MODEL_NAME}"
 HEADERS = {
@@ -26,6 +45,8 @@ CORS(app)
 def chat():
     try:
         data = request.get_json()
+        print("Otrzymane dane JSON:", data)  # Logowanie odebranych danych
+
         if not data or "message" not in data:
             return jsonify({"error": "Brak wiadomości w żądaniu"}), 400
 
@@ -61,6 +82,10 @@ Asystent:"""
             clean_response = generated_text.replace(prompt, "").strip() if generated_text else "Brak odpowiedzi"
         else:
             clean_response = "Brak odpowiedzi lub niepoprawny format odpowiedzi"
+
+        # Zapis do MongoDB w kolekcji "chats"
+        chats_collection = db.chats
+        chats_collection.insert_one({"user_input": user_input, "bot_response": clean_response})
 
         return jsonify({"response": clean_response})
 
