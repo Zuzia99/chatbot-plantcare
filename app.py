@@ -44,7 +44,7 @@ CORS(app)
 # Domyślny routing do strony głównej
 @app.route("/", methods=["GET"])
 def home():
-    return jsonify({"message": "Witaj w aplikacji Chatbot Plantcare!"})
+    return render_template("index.html")
 
 @app.route("/chat", methods=["POST"])
 def chat():

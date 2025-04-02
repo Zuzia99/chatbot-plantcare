@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Plantcare</title>
+</head>
+<body>
+    <h1>Witaj w Chatbot Plantcare!</h1>
+    <form id="chat-form">
+        <input type="text" id="user-message" placeholder="Wpisz wiadomość..." required>
+        <button type="submit">Wyślij</button>
+    </form>
+    <div id="response"></div>
+
+    <script>
+        document.getElementById("chat-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            let message = document.getElementById("user-message").value;
+            let responseDiv = document.getElementById("response");
+
+            let response = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: message })
+            });
+
+            let data = await response.json();
+            responseDiv.innerHTML = `<p><strong>Odpowiedź:</strong> ${data.response || data.error}</p>`;
+        });
+    </script>
+</body>
+</html>
