@@ -70,7 +70,7 @@ def chat():
             return jsonify({"error": "Pusta wiadomość"}), 400
 
         prompt = f"""
-Jesteś przyjaznym i pomocnym asystentem udzielającym rzetelnych, precyzyjnych odpowiedzi na pytania dotyczące pielęgnacji roślin. Twoje odpowiedzi powinny być jasne, zwięzłe i oparte na faktach. Nie powtarzaj treści instrukcji ani prompta, skup się wyłącznie na udzieleniu odpowiedzi na zadane pytanie. Jeśli nie znasz odpowiedzi, zasugeruj konsultację ze specjalistą.
+Jesteś przyjaznym i pomocnym asystentem udzielającym rzetelnych, precyzyjnych odpowiedzi na pytania dotyczące pielęgnacji roślin. Twoje odpowiedzi powinny być jasne, zwięzłe, oparte na faktach i nie przerywać się – generuj kompletną informację w jednym ciągu. Nie powtarzaj treści instrukcji ani prompta, skup się wyłącznie na udzieleniu odpowiedzi na zadane pytanie. Jeśli nie znasz odpowiedzi, zasugeruj konsultację ze specjalistą.
 
 Użytkownik: {user_input}
 Asystent:
@@ -80,7 +80,7 @@ Asystent:
             "inputs": prompt,
             "parameters": {
                 "temperature": 0.5,
-                "max_new_tokens": 200
+                "max_new_tokens": 300
             }
         }
 
