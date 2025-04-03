@@ -10,6 +10,14 @@ import traceback
 # Załaduj zmienne środowiskowe (jeśli używasz .env lokalnie)
 load_dotenv()
 
+# Tworzenie aplikacji Flask
+app = Flask(__name__)
+CORS(app)
+
+# Ustawienie loggera
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Sprawdzenie zmiennej MONGODB_URI
 MONGODB_URI = os.getenv("MONGODB_URI")
 print("MONGODB_URI:", MONGODB_URI)
@@ -42,13 +50,6 @@ HEADERS = {
     "Authorization": f"Bearer {API_TOKEN}",
     "Content-Type": "application/json"
 }
-
-app = Flask(__name__)
-CORS(app)
-
-# Ustawienie loggera
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Domyślny routing do strony głównej
 @app.route("/", methods=["GET"])
@@ -93,9 +94,9 @@ Asystent:"""
 
         chatbot_response = response.json()
 
+        # Sprawdzenie formatu odpowiedzi i wyodrębnienie tekstu
         if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
             generated_text = chatbot_response[0].get("generated_text", "").strip()
-            # Tymczasowo pomijamy operację replace dla testów
             clean_response = generated_text if generated_text else "Brak odpowiedzi"
         else:
             clean_response = "Brak odpowiedzi lub niepoprawny format odpowiedzi"
