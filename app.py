@@ -96,11 +96,14 @@ Asystent:
 
         chatbot_response = response.json()
 
-        # Wyodrębnienie tekstu odpowiedzi i usunięcie prompta, jeśli jest zawarty w wygenerowanym tekście
         if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
             generated_text = chatbot_response[0].get("generated_text", "").strip()
-            if generated_text.startswith(prompt):
-                clean_response = generated_text[len(prompt):].strip()
+            # Używamy bardziej odpornej metody usuwania prompta:
+            # Szukamy pierwszego wystąpienia ciągu "Asystent:" i usuwamy wszystko przed nim.
+            idx = generated_text.find("Asystent:")
+            if idx != -1:
+                # Pobieramy tekst po "Asystent:" (dodajemy długość słowa, aby pominąć ten fragment)
+                clean_response = generated_text[idx + len("Asystent:"):].strip()
             else:
                 clean_response = generated_text if generated_text else "Brak odpowiedzi"
         else:
@@ -120,6 +123,7 @@ Asystent:
         error_details = traceback.format_exc()
         logger.error("Błąd serwera: " + error_details)
         return jsonify({"error": "Wewnętrzny błąd serwera", "details": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
