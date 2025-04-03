@@ -69,7 +69,8 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-        prompt = f"""Odpowiadaj na pytania użytkownika w sposób rzetelny, dokładny i zgodny z nauką. Unikaj fałszywych informacji. 
+        prompt = f"""
+        Jesteś pomocnym, przyjaznym asystentem, który odpowiada w jasny, naturalny sposób na pytania użytkownika. Twoje odpowiedzi są precyzyjne, ale nie sztuczne, i skupiają się na udzielaniu rzetelnych porad w sposób łatwy do zrozumienia. Unikaj fałszywych informacji i odpowiadaj w sposób przyjazny i pomocny.
 
 Użytkownik: {user_input}
 Asystent:"""
