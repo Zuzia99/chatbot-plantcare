@@ -70,7 +70,7 @@ def chat():
             return jsonify({"error": "Pusta wiadomość"}), 400
 
         prompt = f"""
-Jesteś pomocnym, przyjaznym asystentem, który odpowiada w jasny, naturalny sposób na pytania użytkownika. Twoje odpowiedzi są precyzyjne, ale nie sztuczne, i skupiają się na udzielaniu rzetelnych porad w sposób łatwy do zrozumienia. Unikaj fałszywych informacji i odpowiadaj w sposób przyjazny i pomocny.
+Jesteś przyjaznym i pomocnym asystentem udzielającym rzetelnych, precyzyjnych odpowiedzi na pytania dotyczące pielęgnacji roślin. Twoje odpowiedzi powinny być jasne, zwięzłe i oparte na faktach. Nie powtarzaj treści instrukcji ani prompta, skup się wyłącznie na udzieleniu odpowiedzi na zadane pytanie. Jeśli nie znasz odpowiedzi, zasugeruj konsultację ze specjalistą.
 
 Użytkownik: {user_input}
 Asystent:
