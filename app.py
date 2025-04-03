@@ -70,10 +70,11 @@ def chat():
             return jsonify({"error": "Pusta wiadomość"}), 400
 
         prompt = f"""
-        Jesteś pomocnym, przyjaznym asystentem, który odpowiada w jasny, naturalny sposób na pytania użytkownika. Twoje odpowiedzi są precyzyjne, ale nie sztuczne, i skupiają się na udzielaniu rzetelnych porad w sposób łatwy do zrozumienia. Unikaj fałszywych informacji i odpowiadaj w sposób przyjazny i pomocny.
+Jesteś pomocnym, przyjaznym asystentem, który odpowiada w jasny, naturalny sposób na pytania użytkownika. Twoje odpowiedzi są precyzyjne, ale nie sztuczne, i skupiają się na udzielaniu rzetelnych porad w sposób łatwy do zrozumienia. Unikaj fałszywych informacji i odpowiadaj w sposób przyjazny i pomocny.
 
 Użytkownik: {user_input}
-Asystent:"""
+Asystent:
+"""
 
         payload = {
             "inputs": prompt,
@@ -95,10 +96,13 @@ Asystent:"""
 
         chatbot_response = response.json()
 
-        # Sprawdzenie formatu odpowiedzi i wyodrębnienie tekstu
+        # Wyodrębnienie tekstu odpowiedzi i usunięcie prompta, jeśli jest zawarty w wygenerowanym tekście
         if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
             generated_text = chatbot_response[0].get("generated_text", "").strip()
-            clean_response = generated_text if generated_text else "Brak odpowiedzi"
+            if generated_text.startswith(prompt):
+                clean_response = generated_text[len(prompt):].strip()
+            else:
+                clean_response = generated_text if generated_text else "Brak odpowiedzi"
         else:
             clean_response = "Brak odpowiedzi lub niepoprawny format odpowiedzi"
 
