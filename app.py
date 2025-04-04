@@ -80,7 +80,7 @@ Asystent:
             "inputs": prompt,
             "parameters": {
                 "temperature": 0.5,
-                "max_new_tokens": 300
+                "max_new_tokens": 400
             }
         }
 
