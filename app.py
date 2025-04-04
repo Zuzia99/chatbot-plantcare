@@ -70,7 +70,7 @@ def chat():
             return jsonify({"error": "Pusta wiadomość"}), 400
 
         prompt = f"""
-Jesteś przyjaznym i pomocnym asystentem udzielającym rzetelnych, precyzyjnych odpowiedzi na pytania dotyczące pielęgnacji roślin. Twoje odpowiedzi powinny być jasne, zwięzłe, oparte na faktach i nie przerywać się – generuj kompletną informację w jednym ciągu. Nie powtarzaj treści instrukcji ani prompta, skup się wyłącznie na udzieleniu odpowiedzi na zadane pytanie. Jeśli nie znasz odpowiedzi, zasugeruj konsultację ze specjalistą.
+Jesteś przyjaznym, pomocnym asystentem udzielającym rzetelnych, precyzyjnych odpowiedzi na pytania dotyczące pielęgnacji roślin. Twoje odpowiedzi powinny być kompletne i nie przerywać się – generuj pełną informację. Unikaj powtarzania treści prompta i skup się wyłącznie na udzieleniu odpowiedzi na zadane pytanie.
 
 Użytkownik: {user_input}
 Asystent:
@@ -79,12 +79,12 @@ Asystent:
         payload = {
             "inputs": prompt,
             "parameters": {
-                "temperature": 0.5,
-                "max_new_tokens": 400
+                "temperature": 0.3,
+                "max_new_tokens": 320
             }
         }
 
-        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=60)
+        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=90)
         logger.info(f"Status response: {response.status_code}")
         logger.info(f"Response text: {response.text}")
         
