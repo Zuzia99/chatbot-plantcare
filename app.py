@@ -34,7 +34,11 @@ if not MONGODB_URI:
 # Funkcja lazy initialization dla MongoDB
 def get_db():
     if 'db' not in g:
-        g.db = MongoClient(MONGODB_URI).get_database()
+        try:
+            g.db = MongoClient(MONGODB_URI).get_database()
+        except Exception as e:
+            logger.error(f"Błąd połączenia z MongoDB: {e}")
+            raise e
     return g.db
 
 # Zamknięcie połączenia przy końcu kontekstu aplikacji
@@ -98,11 +102,8 @@ Asystent:
 
         if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
             generated_text = chatbot_response[0].get("generated_text", "").strip()
-            # Używamy bardziej odpornej metody usuwania prompta:
-            # Szukamy pierwszego wystąpienia ciągu "Asystent:" i usuwamy wszystko przed nim.
             idx = generated_text.find("Asystent:")
             if idx != -1:
-                # Pobieramy tekst po "Asystent:" (dodajemy długość słowa, aby pominąć ten fragment)
                 clean_response = generated_text[idx + len("Asystent:"):].strip()
             else:
                 clean_response = generated_text if generated_text else "Brak odpowiedzi"
@@ -110,8 +111,12 @@ Asystent:
             clean_response = "Brak odpowiedzi lub niepoprawny format odpowiedzi"
 
         # Zapis do MongoDB w kolekcji "chats"
-        chats_collection = get_db().chats
-        chats_collection.insert_one({"user_input": user_input, "bot_response": clean_response})
+        try:
+            chats_collection = get_db().chats
+            chats_collection.insert_one({"user_input": user_input, "bot_response": clean_response})
+        except Exception as e:
+            logger.error(f"Błąd podczas zapisywania do bazy danych MongoDB: {e}")
+            return jsonify({"error": "Błąd zapisu do bazy danych"}), 500
 
         return jsonify({"response": clean_response})
 
@@ -126,4 +131,4 @@ Asystent:
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+    app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))  # Ustaw debug=False w produkcji
