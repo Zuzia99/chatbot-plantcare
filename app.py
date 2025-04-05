@@ -63,6 +63,7 @@ def home():
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
+        logger.info("Otrzymano żądanie POST /chat")
         data = request.get_json()
         logger.info(f"Otrzymane dane JSON: {data}")
         
