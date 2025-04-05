@@ -84,7 +84,7 @@ Asystent:
             }
         }
 
-        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=90)
+        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=120)
         logger.info(f"Status response: {response.status_code}")
         logger.info(f"Response text: {response.text}")
         
