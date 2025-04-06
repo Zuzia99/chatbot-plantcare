@@ -74,23 +74,23 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-        # Używamy formatu chat, z dodatkowym parametrem stop, aby zatrzymać generację, gdy pojawi się "Użytkownik:"
         payload = {
             "messages": [
                 {
-                    "role": "system", 
+                    "role": "system",
                     "content": (
-                        "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. "
-                        "Odpowiadaj krótko, rzeczowo i bez powtarzania treści pytania. "
-                        "Podaj tylko jedną, spójną odpowiedź."
+                        "Jesteś przyjaznym, pomocnym asystentem ogrodniczym. "
+                        "Twoim zadaniem jest udzielanie krótkich, zwięzłych i precyzyjnych odpowiedzi na pytania. "
+                        "Nigdy nie powtarzaj treści pytania ani nie generuj powtarzających się fraz. "
+                        "Odpowiadaj tylko raz i zakończ zdanie, gdy odpowiedź jest kompletna."
                     )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
                 "temperature": 0.3,
-                "max_new_tokens": 150,
-                "stop": ["\nUżytkownik:", "\n"]
+                "max_new_tokens": 100,
+                "stop": ["\nUżytkownik:"]
             }
         }
 
@@ -108,7 +108,7 @@ def chat():
 
         if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
             generated_text = chatbot_response[0].get("generated_text", "").strip()
-            # Jeśli przypadkiem wygenerowany tekst zawiera powtórzenia pytania, usuwamy je:
+            # Jeśli wygenerowany tekst zaczyna się od pytania, spróbuj usunąć powtórzenia
             if generated_text.lower().startswith(user_input.lower()):
                 clean_response = generated_text[len(user_input):].strip()
             else:
@@ -133,7 +133,6 @@ def chat():
         error_details = traceback.format_exc()
         logger.error("Błąd serwera: " + error_details)
         return jsonify({"error": "Wewnętrzny błąd serwera", "details": str(e)}), 500
-
 
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
