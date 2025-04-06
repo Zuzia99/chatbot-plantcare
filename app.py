@@ -74,15 +74,22 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-        # Używamy formatu chat z rolami system i user.
         payload = {
             "messages": [
-                {"role": "system", "content": "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. Udzielaj krótkich, precyzyjnych i rzeczowych odpowiedzi. Nie powtarzaj treści pytania w swojej odpowiedzi."},
+                {
+                    "role": "system", 
+                    "content": (
+                        "Jesteś ekspertem w pielęgnacji roślin. Udzielaj krótkich, zwięzłych, precyzyjnych i unikalnych odpowiedzi. "
+                        "Nie powtarzaj treści pytania ani nie generuj powtarzających się fraz. Odpowiadaj tylko raz, bez dygresji."
+                    )
+                },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
                 "temperature": 0.3,
                 "max_new_tokens": 150
+                # Opcjonalnie, jeśli API wspiera:
+                # "stop": ["\n", "Użytkownik:"]
             }
         }
 
@@ -98,17 +105,13 @@ def chat():
 
         chatbot_response = response.json()
 
-        # Przetwarzanie wygenerowanej odpowiedzi
         if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
             generated_text = chatbot_response[0].get("generated_text", "").strip()
-            # Usuwamy powtarzające się fragmenty pytania, jeśli występują
-            while generated_text.lower().startswith(user_input.lower()):
-                generated_text = generated_text[len(user_input):].strip()
+            # Możesz dodać dodatkowy post-processing, aby usunąć ewentualne powtórzenia
             clean_response = generated_text if generated_text else "Brak odpowiedzi"
         else:
             clean_response = "Brak odpowiedzi lub niepoprawny format odpowiedzi"
 
-        # Zapis do MongoDB w kolekcji "chats"
         try:
             chats_collection = get_db().chats
             chats_collection.insert_one({"user_input": user_input, "bot_response": clean_response})
