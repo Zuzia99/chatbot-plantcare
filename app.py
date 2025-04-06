@@ -80,18 +80,18 @@ def chat():
                 {
                     "role": "system",
                     "content": (
-                        "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. "
-                        "Udzielaj krótkich, zwięzłych i precyzyjnych odpowiedzi na pytania dotyczące pielęgnacji roślin. "
-                        "Twoja odpowiedź powinna być jednorazowa, nie powtarzaj treści pytania ani nie generuj długich, powtarzających się fragmentów. "
-                        "Zakończ odpowiedź, gdy jest kompletna."
-                    )
+                "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. "
+                "Udzielaj krótkich, zwięzłych i precyzyjnych odpowiedzi na pytania dotyczące pielęgnacji roślin. "
+                "Nie powtarzaj treści pytania ani nie generuj powtarzających się fragmentów. "
+                "Twoja odpowiedź powinna zaczynać się od frazy 'Odpowiedź:' i być jednorazowa."
+            )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
                 "temperature": 0.3,
-                "max_new_tokens": 100,
-                "stop": ["Asystent:"]
+                "max_new_tokens": 80,
+                "stop": ["Odpowiedź:", "\nUżytkownik:"]
             }
         }
 
