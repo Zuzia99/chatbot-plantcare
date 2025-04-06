@@ -74,24 +74,22 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-        # Nowy prompt z wyraźną instrukcją, aby model wygenerował finalną odpowiedź
         payload = {
             "messages": [
                 {
                     "role": "system",
                     "content": (
                         "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. "
-                        "Twoim zadaniem jest udzielanie krótkich, zwięzłych i konkretnej odpowiedzi na pytania dotyczące pielęgnacji roślin. "
-                        "Twoja odpowiedź powinna zaczynać się od frazy 'Odpowiedź:' i nie zawierać powtórzeń pytania ani dodatkowych instrukcji. "
-                        "Podaj tylko gotową, kompletną odpowiedź."
+                        "Udzielaj krótkich, zwięzłych i jednorazowych odpowiedzi. "
+                        "Odpowiadaj tylko raz, bez powtarzania treści pytania, i zakończ zdanie, gdy odpowiedź jest kompletna."
                     )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
                 "temperature": 0.3,
-                "max_new_tokens": 100,
-                "stop": ["\nUżytkownik:"]
+                "max_new_tokens": 80
+                # Na razie usuwamy parametr "stop", by zobaczyć, jak model się zachowa.
             }
         }
 
@@ -109,9 +107,9 @@ def chat():
 
         if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
             generated_text = chatbot_response[0].get("generated_text", "").strip()
-            # Sprawdzamy, czy odpowiedź zaczyna się od "Odpowiedź:" i usuwamy ten prefiks
-            if generated_text.startswith("Odpowiedź:"):
-                clean_response = generated_text[len("Odpowiedź:"):].strip()
+            # Jeśli wygenerowany tekst zaczyna się od pytania, usuń je:
+            if generated_text.lower().startswith(user_input.lower()):
+                clean_response = generated_text[len(user_input):].strip()
             else:
                 clean_response = generated_text if generated_text else "Brak odpowiedzi"
         else:
