@@ -74,9 +74,10 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
+        # Używamy formatu chat z rolami system i user.
         payload = {
             "messages": [
-                {"role": "system", "content": "Jesteś ekspertem w pielęgnacji roślin. Odpowiadaj rzeczowo i precyzyjnie."},
+                {"role": "system", "content": "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. Udzielaj krótkich, precyzyjnych i rzeczowych odpowiedzi. Nie powtarzaj treści pytania w swojej odpowiedzi."},
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
@@ -97,13 +98,13 @@ def chat():
 
         chatbot_response = response.json()
 
+        # Przetwarzanie wygenerowanej odpowiedzi
         if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
             generated_text = chatbot_response[0].get("generated_text", "").strip()
-            idx = generated_text.find("Asystent:")
-            if idx != -1:
-                clean_response = generated_text[idx + len("Asystent:"):].strip()
-            else:
-                clean_response = generated_text if generated_text else "Brak odpowiedzi"
+            # Usuwamy powtarzające się fragmenty pytania, jeśli występują
+            while generated_text.lower().startswith(user_input.lower()):
+                generated_text = generated_text[len(user_input):].strip()
+            clean_response = generated_text if generated_text else "Brak odpowiedzi"
         else:
             clean_response = "Brak odpowiedzi lub niepoprawny format odpowiedzi"
 
@@ -126,7 +127,5 @@ def chat():
         logger.error("Błąd serwera: " + error_details)
         return jsonify({"error": "Wewnętrzny błąd serwera", "details": str(e)}), 500
 
-
-
 if __name__ == "__main__":
-    app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))  # Ustaw debug=False w produkcji
+    app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
