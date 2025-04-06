@@ -74,22 +74,24 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
+        # Ulepszony prompt: jasna instrukcja, aby model generował jednorazową, zwięzłą odpowiedź
         payload = {
             "messages": [
                 {
                     "role": "system",
                     "content": (
                         "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. "
-                        "Udzielaj krótkich, zwięzłych i jednorazowych odpowiedzi. "
-                        "Odpowiadaj tylko raz, bez powtarzania treści pytania, i zakończ zdanie, gdy odpowiedź jest kompletna."
+                        "Udzielaj krótkich, zwięzłych i precyzyjnych odpowiedzi na pytania dotyczące pielęgnacji roślin. "
+                        "Twoja odpowiedź powinna być jednorazowa, nie powtarzaj treści pytania ani nie generuj długich, powtarzających się fragmentów. "
+                        "Zakończ odpowiedź, gdy jest kompletna."
                     )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
                 "temperature": 0.3,
-                "max_new_tokens": 80
-                # Na razie usuwamy parametr "stop", by zobaczyć, jak model się zachowa.
+                "max_new_tokens": 100,
+                "stop": ["Asystent:"]
             }
         }
 
@@ -107,7 +109,7 @@ def chat():
 
         if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
             generated_text = chatbot_response[0].get("generated_text", "").strip()
-            # Jeśli wygenerowany tekst zaczyna się od pytania, usuń je:
+            # Jeśli wygenerowany tekst zaczyna się od treści pytania, usuń tę część
             if generated_text.lower().startswith(user_input.lower()):
                 clean_response = generated_text[len(user_input):].strip()
             else:
