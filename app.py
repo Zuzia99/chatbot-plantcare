@@ -49,7 +49,7 @@ def close_db(error=None):
         db.client.close()
 
 # Konfiguracja API Hugging Face
-API_URL = f"https://api-inference.huggingface.co/models/{MODEL_NAME}"
+API_URL = f"https://api-inference.huggingface.co/models/{MODEL_NAME}?task=text-generation"
 HEADERS = {
     "Authorization": f"Bearer {API_TOKEN}",
     "Content-Type": "application/json"
