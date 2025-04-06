@@ -74,21 +74,16 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-        prompt = f"""
-Jesteś przyjaznym i pomocnym asystentem ogrodniczym. Twoim zadaniem jest udzielanie rzetelnych i praktycznych porad dotyczących pielęgnacji roślin.  
-Odpowiadaj zwięźle, ale konkretnie. Jeśli to konieczne, podaj przykłady lub krótkie wyjaśnienie.  
-
-Pytanie: {user_input}  
-Odpowiedź:
-"""
-
-        payload = {
-            "inputs": prompt,
-            "parameters": {
-                "temperature": 0.3,
-                "max_new_tokens": 320
-            }
-        }
+payload = {
+    "messages": [
+        {"role": "system", "content": "Jesteś ekspertem w pielęgnacji roślin. Odpowiadaj rzeczowo i precyzyjnie."},
+        {"role": "user", "content": user_input}
+    ],
+    "parameters": {
+        "temperature": 0.3,
+        "max_new_tokens": 150
+    }
+}
 
         response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=120)
         logger.info(f"Status response: {response.status_code}")
