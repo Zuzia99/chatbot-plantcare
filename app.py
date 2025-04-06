@@ -80,10 +80,7 @@ def chat():
                 {
                     "role": "system",
                     "content": (
-                "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. "
-                "Udzielaj krótkich, zwięzłych i precyzyjnych odpowiedzi na pytania dotyczące pielęgnacji roślin. "
-                "Nie powtarzaj treści pytania ani nie generuj powtarzających się fragmentów. "
-                "Twoja odpowiedź powinna zaczynać się od frazy 'Odpowiedź:' i być jednorazowa."
+                "Jesteś przyjaznym i pomocnym asystentem udzielającym rzetelnych, precyzyjnych odpowiedzi na pytania dotyczące pielęgnacji roślin. Twoje odpowiedzi powinny być jasne, zwięzłe, oparte na faktach i nie przerywać się – generuj kompletną informację w jednym ciągu. Nie powtarzaj treści instrukcji ani prompta, skup się wyłącznie na udzieleniu odpowiedzi na zadane pytanie. Jeśli nie znasz odpowiedzi, zasugeruj konsultację ze specjalistą."
             )
                 },
                 {"role": "user", "content": user_input}
