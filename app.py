@@ -74,22 +74,23 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
+        # Używamy formatu chat, z dodatkowym parametrem stop, aby zatrzymać generację, gdy pojawi się "Użytkownik:"
         payload = {
             "messages": [
                 {
                     "role": "system", 
                     "content": (
-                        "Jesteś ekspertem w pielęgnacji roślin. Udzielaj krótkich, zwięzłych, precyzyjnych i unikalnych odpowiedzi. "
-                        "Nie powtarzaj treści pytania ani nie generuj powtarzających się fraz. Odpowiadaj tylko raz, bez dygresji."
+                        "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. "
+                        "Odpowiadaj krótko, rzeczowo i bez powtarzania treści pytania. "
+                        "Podaj tylko jedną, spójną odpowiedź."
                     )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
                 "temperature": 0.3,
-                "max_new_tokens": 150
-                # Opcjonalnie, jeśli API wspiera:
-                # "stop": ["\n", "Użytkownik:"]
+                "max_new_tokens": 150,
+                "stop": ["\nUżytkownik:", "\n"]
             }
         }
 
@@ -107,8 +108,11 @@ def chat():
 
         if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
             generated_text = chatbot_response[0].get("generated_text", "").strip()
-            # Możesz dodać dodatkowy post-processing, aby usunąć ewentualne powtórzenia
-            clean_response = generated_text if generated_text else "Brak odpowiedzi"
+            # Jeśli przypadkiem wygenerowany tekst zawiera powtórzenia pytania, usuwamy je:
+            if generated_text.lower().startswith(user_input.lower()):
+                clean_response = generated_text[len(user_input):].strip()
+            else:
+                clean_response = generated_text if generated_text else "Brak odpowiedzi"
         else:
             clean_response = "Brak odpowiedzi lub niepoprawny format odpowiedzi"
 
@@ -129,6 +133,7 @@ def chat():
         error_details = traceback.format_exc()
         logger.error("Błąd serwera: " + error_details)
         return jsonify({"error": "Wewnętrzny błąd serwera", "details": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
