@@ -74,15 +74,16 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
+        # Nowy prompt z wyraźną instrukcją, aby model wygenerował finalną odpowiedź
         payload = {
             "messages": [
                 {
                     "role": "system",
                     "content": (
-                        "Jesteś przyjaznym, pomocnym asystentem ogrodniczym. "
-                        "Twoim zadaniem jest udzielanie krótkich, zwięzłych i precyzyjnych odpowiedzi na pytania. "
-                        "Nigdy nie powtarzaj treści pytania ani nie generuj powtarzających się fraz. "
-                        "Odpowiadaj tylko raz i zakończ zdanie, gdy odpowiedź jest kompletna."
+                        "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. "
+                        "Twoim zadaniem jest udzielanie krótkich, zwięzłych i konkretnej odpowiedzi na pytania dotyczące pielęgnacji roślin. "
+                        "Twoja odpowiedź powinna zaczynać się od frazy 'Odpowiedź:' i nie zawierać powtórzeń pytania ani dodatkowych instrukcji. "
+                        "Podaj tylko gotową, kompletną odpowiedź."
                     )
                 },
                 {"role": "user", "content": user_input}
@@ -108,9 +109,9 @@ def chat():
 
         if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
             generated_text = chatbot_response[0].get("generated_text", "").strip()
-            # Jeśli wygenerowany tekst zaczyna się od pytania, spróbuj usunąć powtórzenia
-            if generated_text.lower().startswith(user_input.lower()):
-                clean_response = generated_text[len(user_input):].strip()
+            # Sprawdzamy, czy odpowiedź zaczyna się od "Odpowiedź:" i usuwamy ten prefiks
+            if generated_text.startswith("Odpowiedź:"):
+                clean_response = generated_text[len("Odpowiedź:"):].strip()
             else:
                 clean_response = generated_text if generated_text else "Brak odpowiedzi"
         else:
