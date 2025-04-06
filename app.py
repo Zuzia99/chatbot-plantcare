@@ -74,16 +74,16 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-payload = {
-    "messages": [
-        {"role": "system", "content": "Jesteś ekspertem w pielęgnacji roślin. Odpowiadaj rzeczowo i precyzyjnie."},
-        {"role": "user", "content": user_input}
-    ],
-    "parameters": {
-        "temperature": 0.3,
-        "max_new_tokens": 150
-    }
-}
+        payload = {
+            "messages": [
+                {"role": "system", "content": "Jesteś ekspertem w pielęgnacji roślin. Odpowiadaj rzeczowo i precyzyjnie."},
+                {"role": "user", "content": user_input}
+            ],
+            "parameters": {
+                "temperature": 0.3,
+                "max_new_tokens": 150
+            }
+        }
 
         response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=120)
         logger.info(f"Status response: {response.status_code}")
@@ -125,6 +125,7 @@ payload = {
         error_details = traceback.format_exc()
         logger.error("Błąd serwera: " + error_details)
         return jsonify({"error": "Wewnętrzny błąd serwera", "details": str(e)}), 500
+
 
 
 if __name__ == "__main__":
