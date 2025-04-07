@@ -91,7 +91,7 @@
 
       // Wyślij zapytanie do API (zakładamy, że Twój serwer działa na odpowiednim URL)
       try {
-        const response = await fetch('https://chatbot-plantcare-6sxz.onrender.com/chat', {
+        const response = await fetch('https://chatbot-plantcare-qyno.onrender.com/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: question })
@@ -103,7 +103,9 @@
         botMsgDiv.className = 'message bot-message';
         botMsgDiv.innerText = escapeHtml(data.response || 'Brak odpowiedzi.'); // Escape'owanie odpowiedzi bota
         chatLog.appendChild(botMsgDiv);
+        if (chatLog.scrollHeight - chatLog.scrollTop === chatLog.clientHeight) {
         chatLog.scrollTop = chatLog.scrollHeight;
+        }
       } catch (error) {
         console.error('Błąd podczas wysyłania zapytania:', error);
       }
