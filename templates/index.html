@@ -91,7 +91,7 @@
 
       // Wyślij zapytanie do API (zakładamy, że Twój serwer działa na odpowiednim URL)
       try {
-        const response = await fetch('https://chatbot-plantcare-qyno.onrender.com/', {
+        const response = await fetch('https://chatbot-plantcare-qyno.onrender.com/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: question })
