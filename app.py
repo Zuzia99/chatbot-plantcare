@@ -74,24 +74,23 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-        # Uproszczony prompt systemowy
+        # Uproszczony prompt systemowy – jednoznaczna instrukcja dla modelu
         payload = {
             "messages": [
                 {
                     "role": "system",
                     "content": (
-                        "Jesteś chatbotem ogrodniczym. Odpowiadaj bardzo krótko i konkretnie. "
-                        "Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i zawierać tylko jedną, spójną informację. "
-                        "Nie powtarzaj pytania."
+                        "Jesteś ekspertem ogrodniczym. Udzielaj krótkich, jednozdaniowych, konkretnych i rzeczowych odpowiedzi na pytania dotyczące pielęgnacji roślin. "
+                        "Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i nie zawierać powtórzeń pytania ani dodatkowych informacji."
                     )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
                 "temperature": 0.1,
-                "max_new_tokens": 40,
-                "repetition_penalty": 2.0,
-                "stop": ["\n"]
+                "max_new_tokens": 60,
+                "repetition_penalty": 2.0
+                # Usuwamy parametr "stop", żeby model sam zakończył generację
             }
         }
 
@@ -108,6 +107,7 @@ def chat():
         chatbot_response = response.json()
         logger.info(f"Pełna odpowiedź modelu: {chatbot_response}")
 
+        # Pobieramy wygenerowany tekst
         if isinstance(chatbot_response, dict) and "generated_text" in chatbot_response:
             generated_text = chatbot_response["generated_text"].strip()
         elif isinstance(chatbot_response, list) and len(chatbot_response) > 0:
@@ -115,7 +115,7 @@ def chat():
         else:
             generated_text = "Brak odpowiedzi"
 
-        # Jeśli wygenerowany tekst zawiera marker "Odpowiedź:", wytnij wszystko przed nim
+        # Jeśli wygenerowany tekst zawiera marker "Odpowiedź:", wycinamy wszystko przed nim
         if "Odpowiedź:" in generated_text:
             clean_response = generated_text.split("Odpowiedź:")[1].strip()
         else:
