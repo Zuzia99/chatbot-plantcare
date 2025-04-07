@@ -112,11 +112,17 @@ def chat():
         else:
             generated_text = "Brak odpowiedzi"
 
-        # Jeśli wygenerowany tekst zawiera marker "Odpowiedź:", wycinamy wszystko przed nim
+        # Jeśli wygenerowany tekst zawiera marker "Odpowiedź:", pobieramy tylko część po nim.
         if "Odpowiedź:" in generated_text:
-            clean_response = generated_text.split("Odpowiedź:")[1].strip()
+            clean_response = generated_text.split("Odpowiedź:", 1)[1].strip()
         else:
-            clean_response = generated_text.replace(user_input, "").strip()
+            # Jeśli nie, spróbuj usunąć fragment, który odpowiada promptowi.
+            # Zakładamy, że prompt zawiera "Pytanie:" – wtedy pobieramy tekst po tym markerze.
+            idx = generated_text.rfind("Pytanie:")
+            if idx != -1:
+                clean_response = generated_text[idx + len("Pytanie:"):].strip()
+            else:
+                clean_response = generated_text.strip()
 
         try:
             chats_collection = get_db().chats
