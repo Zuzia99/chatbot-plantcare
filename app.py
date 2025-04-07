@@ -74,22 +74,26 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-        # Ulepszony prompt: jasna instrukcja, aby model generował jednorazową, zwięzłą odpowiedź
         payload = {
             "messages": [
                 {
                     "role": "system",
                     "content": (
-                        "Jesteś chatbotem ogrodniczym. Odpowiadaj na pytania dotyczące pielęgnacji roślin. "
-                        "Twoje odpowiedzi mają być jasne, konkretne i rzeczowe. Nie powtarzaj pytania użytkownika."
+                        "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. "
+                        "Odpowiadaj na pytania dotyczące pielęgnacji roślin. "
+                        "Twoje odpowiedzi mają być jasne, konkretne i rzeczowe. "
+                        "Nie powtarzaj pytania użytkownika ani dodatkowych instrukcji. "
+                        "Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i być udzielona tylko raz. "
+                        "Jeśli nie znasz odpowiedzi, zasugeruj konsultację ze specjalistą. "
+                        "Odpowiedź:"
                     )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
-                "temperature": 0.3,
-                "max_new_tokens": 150,
-                "stop": ["Użytkownik:", "Asystent:"]
+                "temperature": 0.2,
+                "max_new_tokens": 80,
+                "stop": ["Użytkownik:"]
             }
         }
 
@@ -106,7 +110,6 @@ def chat():
         chatbot_response = response.json()
         logger.info(f"Pełna odpowiedź modelu: {chatbot_response}")
 
-        # Poprawna struktura if/elif/else:
         if isinstance(chatbot_response, dict) and "generated_text" in chatbot_response:
             generated_text = chatbot_response["generated_text"].strip()
         elif isinstance(chatbot_response, list) and len(chatbot_response) > 0:
@@ -114,8 +117,10 @@ def chat():
         else:
             generated_text = "Brak odpowiedzi"
 
-        # Jeśli wygenerowany tekst zawiera powtórzenia pytania, usuń je:
-        clean_response = generated_text.replace(user_input, "").strip()
+        if "Odpowiedź:" in generated_text:
+            clean_response = generated_text.split("Odpowiedź:")[1].strip()
+        else:
+            clean_response = generated_text.strip()
 
         try:
             chats_collection = get_db().chats
