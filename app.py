@@ -80,15 +80,16 @@ def chat():
                 {
                     "role": "system",
                     "content": (
-                "Jesteś chatbotem ogrodniczym. Odpowiadaj na pytania dotyczące pielęgnacji roślin. Twoje odpowiedzi mają być jasne, konkretne i rzeczowe. Nie powtarzaj pytania użytkownika."
-            )
+                        "Jesteś chatbotem ogrodniczym. Odpowiadaj na pytania dotyczące pielęgnacji roślin. "
+                        "Twoje odpowiedzi mają być jasne, konkretne i rzeczowe. Nie powtarzaj pytania użytkownika."
+                    )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
                 "temperature": 0.3,
                 "max_new_tokens": 150,
-                "stop": ["Użytkownik:", "Asystent:"]                
+                "stop": ["Użytkownik:", "Asystent:"]
             }
         }
 
@@ -104,18 +105,17 @@ def chat():
 
         chatbot_response = response.json()
         logger.info(f"Pełna odpowiedź modelu: {chatbot_response}")
-            
+
+        # Poprawna struktura if/elif/else:
         if isinstance(chatbot_response, dict) and "generated_text" in chatbot_response:
             generated_text = chatbot_response["generated_text"].strip()
-            elif isinstance(chatbot_response, list) and len(chatbot_response) > 0:
-                generated_text = chatbot_response[0].get("generated_text", "").strip()
+        elif isinstance(chatbot_response, list) and len(chatbot_response) > 0:
+            generated_text = chatbot_response[0].get("generated_text", "").strip()
         else:
-                generated_text = "Brak odpowiedzi"
+            generated_text = "Brak odpowiedzi"
 
-            # Jeśli wygenerowany tekst zaczyna się od treści pytania, usuń tę część
-            clean_response = generated_text.replace(user_input, "").strip()
-        else:
-            clean_response = "Brak odpowiedzi lub niepoprawny format odpowiedzi"
+        # Jeśli wygenerowany tekst zawiera powtórzenia pytania, usuń je:
+        clean_response = generated_text.replace(user_input, "").strip()
 
         try:
             chats_collection = get_db().chats
