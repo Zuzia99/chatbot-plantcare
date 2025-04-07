@@ -74,23 +74,23 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-        # Ulepszony prompt systemowy
+        # Przygotowanie payloadu z ulepszonym promptem systemowym
         payload = {
             "messages": [
                 {
                     "role": "system",
                     "content": (
-                        "Jesteś chatbotem ogrodniczym. Odpowiadaj bardzo krótko, jednozdaniowo i bez powtórzeń. "
-                        "Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i zawierać tylko konkretną informację. "
-                        "Nie powtarzaj pytania użytkownika ani dodatkowych instrukcji."
+                        "Jesteś chatbotem ogrodniczym. Odpowiadaj na pytania dotyczące pielęgnacji roślin. "
+                        "Twoje odpowiedzi mają być jasne, konkretne i rzeczowe. "
+                        "Odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i zawierać tylko gotową informację, bez powtarzania pytania."
                     )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
                 "temperature": 0.1,
-                "max_new_tokens": 50,
-                "repetition_penalty": 1.2,
+                "max_new_tokens": 80,
+                "repetition_penalty": 1.5,
                 "stop": ["Użytkownik:", "Asystent:"]
             }
         }
@@ -108,6 +108,7 @@ def chat():
         chatbot_response = response.json()
         logger.info(f"Pełna odpowiedź modelu: {chatbot_response}")
 
+        # Pobranie wygenerowanego tekstu
         if isinstance(chatbot_response, dict) and "generated_text" in chatbot_response:
             generated_text = chatbot_response["generated_text"].strip()
         elif isinstance(chatbot_response, list) and len(chatbot_response) > 0:
@@ -115,10 +116,11 @@ def chat():
         else:
             generated_text = "Brak odpowiedzi"
 
-        # Jeśli wygenerowany tekst zawiera marker "Odpowiedź:", usuń go
+        # Post-process: usuń wszystko przed markerem "Odpowiedź:" jeśli występuje
         if "Odpowiedź:" in generated_text:
             clean_response = generated_text.split("Odpowiedź:")[1].strip()
         else:
+            # Jeśli prompt powtarza się, usuń wystąpienie pytania
             clean_response = generated_text.replace(user_input, "").strip()
 
         try:
