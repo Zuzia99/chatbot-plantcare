@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 import logging
 import traceback
+import html  # Importujemy do unescape HTML
 
 # Załaduj zmienne środowiskowe (jeśli używasz .env lokalnie)
 load_dotenv()
@@ -87,7 +88,7 @@ def chat():
                 "temperature": 0.1,
                 "max_new_tokens": 60,
                 "repetition_penalty": 2.0,
-                "stop": ["\n"]  # Model zakończy generację po nowej linii
+                "stop": ["\n"]  # Zatrzymujemy generację przy nowej linii
             }
         }
 
@@ -112,17 +113,14 @@ def chat():
         else:
             generated_text = "Brak odpowiedzi"
 
-        # Jeśli wygenerowany tekst zawiera marker "Odpowiedź:", pobieramy tylko część po nim.
+        # Używamy html.unescape, żeby usunąć encje HTML (np. &#039;)
+        generated_text = html.unescape(generated_text)
+
+        # Wycinamy wszystko przed markerem "Odpowiedź:" (jeśli występuje)
         if "Odpowiedź:" in generated_text:
             clean_response = generated_text.split("Odpowiedź:", 1)[1].strip()
         else:
-            # Jeśli nie, spróbuj usunąć fragment, który odpowiada promptowi.
-            # Zakładamy, że prompt zawiera "Pytanie:" – wtedy pobieramy tekst po tym markerze.
-            idx = generated_text.rfind("Pytanie:")
-            if idx != -1:
-                clean_response = generated_text[idx + len("Pytanie:"):].strip()
-            else:
-                clean_response = generated_text.strip()
+            clean_response = generated_text.replace(user_input, "").strip()
 
         try:
             chats_collection = get_db().chats
@@ -145,4 +143,3 @@ def chat():
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 10000))  # Render automatycznie przypisze port
     app.run(host="0.0.0.0", port=port)
- 
