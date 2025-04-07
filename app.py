@@ -74,23 +74,20 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-        # Uproszczony prompt systemowy – jednoznaczna instrukcja dla modelu
+        # Budujemy prompt jako pojedynczy ciąg tekstowy
+        prompt = (
+            "Jesteś ekspertem ogrodniczym. Udzielaj krótkich, jednozdaniowych, konkretnych i rzeczowych odpowiedzi na pytania dotyczące pielęgnacji roślin. "
+            "Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i nie zawierać powtórzeń pytania ani dodatkowych informacji. "
+            f"Pytanie: {user_input}\nOdpowiedź:"
+        )
+
         payload = {
-            "messages": [
-                {
-                    "role": "system",
-                    "content": (
-                        "Jesteś ekspertem ogrodniczym. Udzielaj krótkich, jednozdaniowych, konkretnych i rzeczowych odpowiedzi na pytania dotyczące pielęgnacji roślin. "
-                        "Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i nie zawierać powtórzeń pytania ani dodatkowych informacji."
-                    )
-                },
-                {"role": "user", "content": user_input}
-            ],
+            "inputs": prompt,
             "parameters": {
                 "temperature": 0.1,
                 "max_new_tokens": 60,
-                "repetition_penalty": 2.0
-                # Usuwamy parametr "stop", żeby model sam zakończył generację
+                "repetition_penalty": 2.0,
+                "stop": ["\n"]  # Model zakończy generację po nowej linii
             }
         }
 
