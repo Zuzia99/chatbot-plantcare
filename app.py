@@ -80,15 +80,15 @@ def chat():
                 {
                     "role": "system",
                     "content": (
-                "Jesteś przyjaznym i pomocnym asystentem udzielającym rzetelnych, precyzyjnych odpowiedzi na pytania dotyczące pielęgnacji roślin. Twoje odpowiedzi powinny być jasne, zwięzłe, oparte na faktach i nie przerywać się – generuj kompletną informację w jednym ciągu. Nie powtarzaj treści instrukcji ani prompta, skup się wyłącznie na udzieleniu odpowiedzi na zadane pytanie. Jeśli nie znasz odpowiedzi, zasugeruj konsultację ze specjalistą."
+                "Jesteś chatbotem ogrodniczym. Odpowiadaj na pytania dotyczące pielęgnacji roślin. Twoje odpowiedzi mają być jasne, konkretne i rzeczowe. Nie powtarzaj pytania użytkownika."
             )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
                 "temperature": 0.3,
-                "max_new_tokens": 80,
-                "stop": ["Odpowiedź:", "\nUżytkownik:"]
+                "max_new_tokens": 150,
+                "stop": ["Użytkownik:", "Asystent:"]                
             }
         }
 
@@ -103,14 +103,17 @@ def chat():
             }), response.status_code
 
         chatbot_response = response.json()
+        logger.info(f"Pełna odpowiedź modelu: {chatbot_response}")
+            
+        if isinstance(chatbot_response, dict) and "generated_text" in chatbot_response:
+            generated_text = chatbot_response["generated_text"].strip()
+            elif isinstance(chatbot_response, list) and len(chatbot_response) > 0:
+                generated_text = chatbot_response[0].get("generated_text", "").strip()
+        else:
+                generated_text = "Brak odpowiedzi"
 
-        if isinstance(chatbot_response, list) and len(chatbot_response) > 0:
-            generated_text = chatbot_response[0].get("generated_text", "").strip()
             # Jeśli wygenerowany tekst zaczyna się od treści pytania, usuń tę część
-            if generated_text.lower().startswith(user_input.lower()):
-                clean_response = generated_text[len(user_input):].strip()
-            else:
-                clean_response = generated_text if generated_text else "Brak odpowiedzi"
+            clean_response = generated_text.replace(user_input, "").strip()
         else:
             clean_response = "Brak odpowiedzi lub niepoprawny format odpowiedzi"
 
