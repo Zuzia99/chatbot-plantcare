@@ -80,20 +80,18 @@ def chat():
                     "role": "system",
                     "content": (
                         "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. "
-                        "Odpowiadaj na pytania dotyczące pielęgnacji roślin. "
-                        "Twoje odpowiedzi mają być jasne, konkretne i rzeczowe. "
-                        "Nie powtarzaj pytania użytkownika ani dodatkowych instrukcji. "
-                        "Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i być udzielona tylko raz. "
-                        "Jeśli nie znasz odpowiedzi, zasugeruj konsultację ze specjalistą. "
-                        "Odpowiedź:"
+                        "Odpowiadaj na pytania dotyczące pielęgnacji roślin, udzielając krótkiej, konkretnej i jednorazowej odpowiedzi, "
+                        "bez powtarzania treści pytania ani dodatkowych instrukcji. Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' "
+                        "i być kompletna."
                     )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
                 "temperature": 0.2,
-                "max_new_tokens": 80,
-                "stop": ["Użytkownik:"]
+                "max_new_tokens": 60,
+                "repetition_penalty": 1.2,
+                "stop": ["Użytkownik:", "Asystent:"]
             }
         }
 
@@ -117,10 +115,11 @@ def chat():
         else:
             generated_text = "Brak odpowiedzi"
 
+        # Przetwarzanie: wycinamy fragment "Odpowiedź:" jeśli występuje
         if "Odpowiedź:" in generated_text:
             clean_response = generated_text.split("Odpowiedź:")[1].strip()
         else:
-            clean_response = generated_text.strip()
+            clean_response = generated_text.replace(user_input, "").strip()
 
         try:
             chats_collection = get_db().chats
