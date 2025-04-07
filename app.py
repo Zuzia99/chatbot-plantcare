@@ -74,22 +74,22 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
+        # Ulepszony prompt systemowy
         payload = {
             "messages": [
                 {
                     "role": "system",
                     "content": (
-                        "Jesteś przyjaznym i pomocnym asystentem ogrodniczym. "
-                        "Odpowiadaj na pytania dotyczące pielęgnacji roślin, udzielając krótkiej, konkretnej i jednorazowej odpowiedzi, "
-                        "bez powtarzania treści pytania ani dodatkowych instrukcji. Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' "
-                        "i być kompletna."
+                        "Jesteś chatbotem ogrodniczym. Odpowiadaj bardzo krótko, jednozdaniowo i bez powtórzeń. "
+                        "Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i zawierać tylko konkretną informację. "
+                        "Nie powtarzaj pytania użytkownika ani dodatkowych instrukcji."
                     )
                 },
                 {"role": "user", "content": user_input}
             ],
             "parameters": {
-                "temperature": 0.2,
-                "max_new_tokens": 60,
+                "temperature": 0.1,
+                "max_new_tokens": 50,
                 "repetition_penalty": 1.2,
                 "stop": ["Użytkownik:", "Asystent:"]
             }
@@ -115,7 +115,7 @@ def chat():
         else:
             generated_text = "Brak odpowiedzi"
 
-        # Przetwarzanie: wycinamy fragment "Odpowiedź:" jeśli występuje
+        # Jeśli wygenerowany tekst zawiera marker "Odpowiedź:", usuń go
         if "Odpowiedź:" in generated_text:
             clean_response = generated_text.split("Odpowiedź:")[1].strip()
         else:
