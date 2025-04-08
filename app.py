@@ -26,11 +26,15 @@ print("MONGODB_URI:", MONGODB_URI)
 # Zmienne API
 API_TOKEN = os.getenv("API_TOKEN")
 MODEL_NAME = os.getenv("MODEL_NAME")
+MONGODB_URI = os.getenv("MONGODB_URI")
 
 if not API_TOKEN or not MODEL_NAME:
     raise ValueError("Brak wymaganych zmiennych środowiskowych: API_TOKEN lub MODEL_NAME")
 if not MONGODB_URI:
     raise ValueError("Brak zmiennej środowiskowej: MONGODB_URI")
+
+# Logowanie używanego modelu
+logging.info(f"Uruchamiam model: {MODEL_NAME}")
 
 # Funkcja lazy initialization dla MongoDB
 def get_db():
