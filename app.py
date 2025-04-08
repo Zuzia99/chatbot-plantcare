@@ -62,7 +62,9 @@ HEADERS = {
 
 # Funkcja retry dla wysyłania zapytań do API
 def send_request_with_retry(payload, headers, retries=5, delay=3):
-    url = f"https://api-inference.huggingface.co/models/{MODEL_NAME}"  # używamy zmiennej MODEL_NAME zdefiniowanej na początku
+    retries = int(retries)  # Konwertujemy retries na liczbę całkowitą
+    
+    url = f"https://api-inference.huggingface.co/models/{MODEL_NAME}"
     
     for attempt in range(retries):
         try:
@@ -81,6 +83,7 @@ def send_request_with_retry(payload, headers, retries=5, delay=3):
                 time.sleep(delay)  # Zwiększenie opóźnienia pomiędzy próbami
             else:
                 return {"error": "API Hugging Face nie odpowiada. Spróbuj później."}
+
 
 # Domyślny routing do strony głównej
 @app.route("/", methods=["GET"])
