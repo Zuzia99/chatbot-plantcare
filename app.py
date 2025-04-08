@@ -75,20 +75,24 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-        # Budujemy prompt jako pojedynczy ciąg tekstowy
+        # Budujemy prompt z unikalnymi separatorami
         prompt = (
-            "Jesteś ekspertem ogrodniczym. Udzielaj krótkich, jednozdaniowych, konkretnych i rzeczowych odpowiedzi na pytania dotyczące pielęgnacji roślin. "
-            "Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i nie zawierać powtórzeń pytania ani dodatkowych informacji. "
-            f"Pytanie: {user_input}\nOdpowiedź:"
+            "Instrukcje: Jesteś ekspertem ogrodniczym. Udzielaj krótkich, jednozdaniowych, konkretnych i rzeczowych odpowiedzi "
+            "na pytania dotyczące pielęgnacji roślin. Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i nie zawierać "
+            "powtórzeń pytania ani dodatkowych informacji.\n"
+            f"Pytanie: {user_input}\n"
+            "=====\n"
+            "Odpowiedź:"
         )
 
         payload = {
             "inputs": prompt,
             "parameters": {
                 "temperature": 0.1,
-                "max_new_tokens": 60,
-                "repetition_penalty": 2.0,
-                "stop": ["\n"]  # Zatrzymujemy generację przy nowej linii
+                "max_new_tokens": 100,
+                "repetition_penalty": 2.0
+                # Opcjonalnie można dodać stop sequences, ale na tę chwilę usuwamy, aby sprawdzić pełniejszy tekst
+                # "stop": ["\n"]
             }
         }
 
