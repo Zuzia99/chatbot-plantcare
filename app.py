@@ -128,19 +128,13 @@ def chat():
                 "temperature": 0.1,
                 "max_new_tokens": 100,
                 "repetition_penalty": 2.0,
-                "stop_sequence": "====="
+                "stop_sequence": "\n"  # Zmienione z '=====' na '\n'
             }
         }
 
         response = send_request_with_retry(payload, HEADERS)
 
-        # Sprawdzamy, czy odpowiedź z API zawiera błąd
-        if isinstance(response, dict) and "error" in response:
-            return jsonify({
-                "error": response["error"]
-            }), 500
-
-        # Jeżeli odpowiedź jest poprawna, przetwarzamy ją
+        # Przetwarzanie odpowiedzi
         if isinstance(response, dict) and "generated_text" in response:
             generated_text = response["generated_text"].strip()
         elif isinstance(response, list) and len(response) > 0:
@@ -148,13 +142,16 @@ def chat():
         else:
             generated_text = "Brak odpowiedzi"
 
+        # Użycie html.unescape() do konwersji kodów HTML
         generated_text = html.unescape(generated_text)
 
+        # Usuwanie fragmentów instrukcji i przekształcanie w odpowiedź
         if "Odpowiedź:" in generated_text:
             clean_response = generated_text.split("Odpowiedź:", 1)[1].strip()
         else:
             clean_response = generated_text.replace(user_input, "").strip()
 
+        # Zapis do bazy danych
         try:
             chats_collection = get_db().chats
             chats_collection.insert_one({"user_input": user_input, "bot_response": clean_response})
