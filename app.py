@@ -67,7 +67,7 @@ def send_request_with_retry(payload, headers, url, retries=5, delay=3):
         try:
             response = requests.post(url, json=payload, headers=headers)
             response.raise_for_status()
-            return response.json()
+            return response.json()  # Zwracamy JSON odpowiedzi
         except requests.exceptions.RequestException as e:
             logging.error(f"Próba {attempt+1}/{retries} nie powiodła się: {e}")
             if attempt < retries - 1:
@@ -113,20 +113,18 @@ def chat():
         }
 
         response = send_request_with_retry(payload, HEADERS, API_URL)
-        
-        if response.status_code != 200:
+
+        # Sprawdzamy, czy odpowiedź z API zawiera błąd
+        if isinstance(response, dict) and "error" in response:
             return jsonify({
-                "error": f"Błąd API Hugging Face: {response.status_code}",
-                "details": response.text
-            }), response.status_code
+                "error": response["error"]
+            }), 500
 
-        chatbot_response = response.json()
-        logger.info(f"Pełna odpowiedź modelu: {chatbot_response}")
-
-        if isinstance(chatbot_response, dict) and "generated_text" in chatbot_response:
-            generated_text = chatbot_response["generated_text"].strip()
-        elif isinstance(chatbot_response, list) and len(chatbot_response) > 0:
-            generated_text = chatbot_response[0].get("generated_text", "").strip()
+        # Jeżeli odpowiedź jest poprawna, przetwarzamy ją
+        if isinstance(response, dict) and "generated_text" in response:
+            generated_text = response["generated_text"].strip()
+        elif isinstance(response, list) and len(response) > 0:
+            generated_text = response[0].get("generated_text", "").strip()
         else:
             generated_text = "Brak odpowiedzi"
 
