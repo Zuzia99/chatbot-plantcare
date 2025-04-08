@@ -61,8 +61,9 @@ HEADERS = {
 }
 
 # Funkcja retry dla wysyłania zapytań do API
-def send_request_with_retry(payload, headers, url, retries=5, delay=3):
-    """Wysyła zapytanie do API Hugging Face z mechanizmem ponawiania prób."""
+def send_request_with_retry(payload, headers, retries=5, delay=3):
+    url = f"https://api-inference.huggingface.co/models/{model_name}"  # używamy zmiennej model_name
+
     for attempt in range(retries):
         try:
             response = requests.post(url, json=payload, headers=headers)
