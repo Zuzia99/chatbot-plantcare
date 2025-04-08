@@ -151,6 +151,9 @@ def chat():
         else:
             clean_response = generated_text.replace(user_input, "").strip()
 
+        # Usunięcie niechcianych kodów HTML, takich jak &#039;
+        clean_response = clean_response.replace("&#039;", "'").replace("&quot;", "\"")
+
         # Zapis do bazy danych
         try:
             chats_collection = get_db().chats
