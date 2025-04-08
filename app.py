@@ -61,17 +61,19 @@ HEADERS = {
 }
 
 # Funkcja retry dla wysyłania zapytań do API
-def send_request_with_retry(payload, headers, url, retries=3, delay=2):
+def send_request_with_retry(payload, headers, url, retries=5, delay=3):
+    """Wysyła zapytanie do API Hugging Face z mechanizmem ponawiania prób."""
     for attempt in range(retries):
         try:
             response = requests.post(url, json=payload, headers=headers)
             response.raise_for_status()
-            return response
+            return response.json()
         except requests.exceptions.RequestException as e:
+            logging.error(f"Próba {attempt+1}/{retries} nie powiodła się: {e}")
             if attempt < retries - 1:
                 time.sleep(delay)
             else:
-                raise e
+                return {"error": "API Hugging Face nie odpowiada. Spróbuj później."}
 
 # Domyślny routing do strony głównej
 @app.route("/", methods=["GET"])
