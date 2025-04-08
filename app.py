@@ -67,11 +67,17 @@ def send_request_with_retry(payload, headers, url, retries=5, delay=3):
         try:
             response = requests.post(url, json=payload, headers=headers)
             response.raise_for_status()
-            return response.json()  # Zwracamy JSON odpowiedzi
+            
+            # Dodanie sprawdzenia dla kodu 503
+            if response.status_code == 503:
+                logging.error(f"Błąd 503: Usługa jest chwilowo niedostępna. Spróbuj ponownie później.")
+                return {"error": "Serwis jest chwilowo niedostępny. Spróbuj później."}
+            
+            return response.json()
         except requests.exceptions.RequestException as e:
             logging.error(f"Próba {attempt+1}/{retries} nie powiodła się: {e}")
             if attempt < retries - 1:
-                time.sleep(delay)
+                time.sleep(delay)  # Zwiększenie opóźnienia pomiędzy próbami
             else:
                 return {"error": "API Hugging Face nie odpowiada. Spróbuj później."}
 
