@@ -75,7 +75,6 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
 
-        # Budujemy prompt z unikalnymi separatorami
         prompt = (
             "Instrukcje: Jesteś ekspertem ogrodniczym. Udzielaj krótkich, jednozdaniowych, konkretnych i rzeczowych odpowiedzi "
             "na pytania dotyczące pielęgnacji roślin. Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i nie zawierać "
@@ -91,12 +90,11 @@ def chat():
                 "temperature": 0.1,
                 "max_new_tokens": 100,
                 "repetition_penalty": 2.0
-                # Opcjonalnie można dodać stop sequences, ale na tę chwilę usuwamy, aby sprawdzić pełniejszy tekst
-                # "stop": ["\n"]
             }
         }
 
-        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=120)
+        # Używamy mechanizmu retry przy wysyłaniu zapytania
+        response = send_request_with_retry(payload, HEADERS, API_URL)
         logger.info(f"Status response: {response.status_code}")
         logger.info(f"Response text: {response.text}")
         
@@ -109,7 +107,6 @@ def chat():
         chatbot_response = response.json()
         logger.info(f"Pełna odpowiedź modelu: {chatbot_response}")
 
-        # Pobieramy wygenerowany tekst
         if isinstance(chatbot_response, dict) and "generated_text" in chatbot_response:
             generated_text = chatbot_response["generated_text"].strip()
         elif isinstance(chatbot_response, list) and len(chatbot_response) > 0:
@@ -117,10 +114,8 @@ def chat():
         else:
             generated_text = "Brak odpowiedzi"
 
-        # Używamy html.unescape, żeby usunąć encje HTML (np. &#039;)
         generated_text = html.unescape(generated_text)
 
-        # Wycinamy wszystko przed markerem "Odpowiedź:" (jeśli występuje)
         if "Odpowiedź:" in generated_text:
             clean_response = generated_text.split("Odpowiedź:", 1)[1].strip()
         else:
