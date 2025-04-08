@@ -112,7 +112,7 @@ def chat():
         user_input = data["message"].strip()
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
-
+        
         prompt = (
             "Instrukcje: Jesteś ekspertem ogrodniczym. Udzielaj krótkich, jednozdaniowych, konkretnych i rzeczowych odpowiedzi "
             "na pytania dotyczące pielęgnacji roślin. Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i nie zawierać "
@@ -127,7 +127,8 @@ def chat():
             "parameters": {
                 "temperature": 0.1,
                 "max_new_tokens": 100,
-                "repetition_penalty": 2.0
+                "repetition_penalty": 2.0,
+                "stop_sequence": "====="
             }
         }
 
