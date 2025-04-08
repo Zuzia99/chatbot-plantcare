@@ -62,28 +62,37 @@ HEADERS = {
 
 # Funkcja retry dla wysyłania zapytań do API
 def send_request_with_retry(payload, headers, retries=5, delay=3):
-    retries = int(retries)  # Konwertujemy retries na liczbę całkowitą
-    
+    retries = int(retries)  # Upewniamy się, że retries jest liczbą całkowitą
     url = f"https://api-inference.huggingface.co/models/{MODEL_NAME}"
     
     for attempt in range(retries):
         try:
-            response = requests.post(url, json=payload, headers=headers)
-            response.raise_for_status()
+            logging.info(f"Wysyłam zapytanie: próba {attempt+1}/{retries} na URL: {url}")
+            logging.info(f"Payload: {payload}")
             
-            # Dodanie sprawdzenia dla kodu 503
+            response = requests.post(url, json=payload, headers=headers)
+            
+            # Logowanie statusu i części odpowiedzi (pierwsze 200 znaków)
+            logging.info(f"Odpowiedź (próba {attempt+1}): Status: {response.status_code} - Treść: {response.text[:200]}")
+            
+            # Sprawdzenie, czy API zwróciło błąd 503
             if response.status_code == 503:
-                logging.error(f"Błąd 503: Usługa jest chwilowo niedostępna. Spróbuj ponownie później.")
+                logging.error("Błąd 503: Usługa jest chwilowo niedostępna. Spróbuj ponownie później.")
                 return {"error": "Serwis jest chwilowo niedostępny. Spróbuj później."}
             
+            response.raise_for_status()  # Rzuci wyjątek, jeśli status nie jest 200-299
+            
+            # Logowanie pełnej odpowiedzi - opcjonalnie możesz rozszerzyć
+            logging.info("Odpowiedź API została pomyślnie odebrana.")
             return response.json()
         except requests.exceptions.RequestException as e:
             logging.error(f"Próba {attempt+1}/{retries} nie powiodła się: {e}")
             if attempt < retries - 1:
-                time.sleep(delay)  # Zwiększenie opóźnienia pomiędzy próbami
+                logging.info(f"Ponawiam próbę za {delay} sekund.")
+                time.sleep(delay)  # Odczekaj przed kolejną próbą
             else:
+                logging.error("API Hugging Face nie odpowiada po maksymalnej liczbie prób.")
                 return {"error": "API Hugging Face nie odpowiada. Spróbuj później."}
-
 
 # Domyślny routing do strony głównej
 @app.route("/", methods=["GET"])
@@ -122,7 +131,7 @@ def chat():
             }
         }
 
-        response = send_request_with_retry(payload, HEADERS, API_URL)
+        response = send_request_with_retry(payload, HEADERS)
 
         # Sprawdzamy, czy odpowiedź z API zawiera błąd
         if isinstance(response, dict) and "error" in response:
