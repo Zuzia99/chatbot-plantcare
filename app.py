@@ -7,6 +7,7 @@ from pymongo import MongoClient
 import logging
 import traceback
 import html  # Importujemy do unescape HTML
+import time
 
 # Załaduj zmienne środowiskowe (jeśli używasz .env lokalnie)
 load_dotenv()
@@ -26,7 +27,6 @@ print("MONGODB_URI:", MONGODB_URI)
 # Zmienne API
 API_TOKEN = os.getenv("API_TOKEN")
 MODEL_NAME = os.getenv("MODEL_NAME")
-MONGODB_URI = os.getenv("MONGODB_URI")
 
 if not API_TOKEN or not MODEL_NAME:
     raise ValueError("Brak wymaganych zmiennych środowiskowych: API_TOKEN lub MODEL_NAME")
@@ -59,6 +59,19 @@ HEADERS = {
     "Authorization": f"Bearer {API_TOKEN}",
     "Content-Type": "application/json"
 }
+
+# Funkcja retry dla wysyłania zapytań do API
+def send_request_with_retry(payload, headers, url, retries=3, delay=2):
+    for attempt in range(retries):
+        try:
+            response = requests.post(url, json=payload, headers=headers)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.RequestException as e:
+            if attempt < retries - 1:
+                time.sleep(delay)
+            else:
+                raise e
 
 # Domyślny routing do strony głównej
 @app.route("/", methods=["GET"])
@@ -97,10 +110,7 @@ def chat():
             }
         }
 
-        # Używamy mechanizmu retry przy wysyłaniu zapytania
         response = send_request_with_retry(payload, HEADERS, API_URL)
-        logger.info(f"Status response: {response.status_code}")
-        logger.info(f"Response text: {response.text}")
         
         if response.status_code != 200:
             return jsonify({
