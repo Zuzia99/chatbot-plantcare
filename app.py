@@ -6,17 +6,15 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 import logging
 import traceback
-import html  # Importujemy do unescape HTML
+import html  # do konwersji kodów HTML
 import time
 
-# Załaduj zmienne środowiskowe (jeśli używasz .env lokalnie)
+# Załaduj zmienne środowiskowe
 load_dotenv()
 
-# Tworzenie aplikacji Flask
 app = Flask(__name__)
 CORS(app)
 
-# Ustawienie loggera
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -33,10 +31,8 @@ if not API_TOKEN or not MODEL_NAME:
 if not MONGODB_URI:
     raise ValueError("Brak zmiennej środowiskowej: MONGODB_URI")
 
-# Logowanie używanego modelu
 logging.info(f"Uruchamiam model: {MODEL_NAME}")
 
-# Funkcja lazy initialization dla MongoDB
 def get_db():
     if 'db' not in g:
         try:
@@ -46,7 +42,6 @@ def get_db():
             raise e
     return g.db
 
-# Zamknięcie połączenia przy końcu kontekstu aplikacji
 @app.teardown_appcontext
 def close_db(error=None):
     db = g.pop('db', None)
@@ -60,41 +55,33 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-# Funkcja retry dla wysyłania zapytań do API
 def send_request_with_retry(payload, headers, retries=5, delay=3):
-    retries = int(retries)  # Upewniamy się, że retries jest liczbą całkowitą
+    retries = int(retries)
     url = f"https://api-inference.huggingface.co/models/{MODEL_NAME}"
     
     for attempt in range(retries):
         try:
-            logging.info(f"Wysyłam zapytanie: próba {attempt+1}/{retries} na URL: {url}")
-            logging.info(f"Payload: {payload}")
-            
+            logger.info(f"Wysyłam zapytanie: próba {attempt+1}/{retries} na URL: {url}")
+            logger.info(f"Payload: {payload}")
             response = requests.post(url, json=payload, headers=headers)
+            logger.info(f"Odpowiedź (próba {attempt+1}): Status: {response.status_code} - Treść: {response.text[:200]}")
             
-            # Logowanie statusu i części odpowiedzi (pierwsze 200 znaków)
-            logging.info(f"Odpowiedź (próba {attempt+1}): Status: {response.status_code} - Treść: {response.text[:200]}")
-            
-            # Sprawdzenie, czy API zwróciło błąd 503
             if response.status_code == 503:
-                logging.error("Błąd 503: Usługa jest chwilowo niedostępna. Spróbuj ponownie później.")
+                logger.error("Błąd 503: Usługa jest chwilowo niedostępna. Spróbuj ponownie później.")
                 return {"error": "Serwis jest chwilowo niedostępny. Spróbuj później."}
             
-            response.raise_for_status()  # Rzuci wyjątek, jeśli status nie jest 200-299
-            
-            # Logowanie pełnej odpowiedzi - opcjonalnie możesz rozszerzyć
-            logging.info("Odpowiedź API została pomyślnie odebrana.")
+            response.raise_for_status()
+            logger.info("Odpowiedź API została pomyślnie odebrana.")
             return response.json()
         except requests.exceptions.RequestException as e:
-            logging.error(f"Próba {attempt+1}/{retries} nie powiodła się: {e}")
+            logger.error(f"Próba {attempt+1}/{retries} nie powiodła się: {e}")
             if attempt < retries - 1:
-                logging.info(f"Ponawiam próbę za {delay} sekund.")
-                time.sleep(delay)  # Odczekaj przed kolejną próbą
+                logger.info(f"Ponawiam próbę za {delay} sekund.")
+                time.sleep(delay)
             else:
-                logging.error("API Hugging Face nie odpowiada po maksymalnej liczbie prób.")
+                logger.error("API Hugging Face nie odpowiada po maksymalnej liczbie prób.")
                 return {"error": "API Hugging Face nie odpowiada. Spróbuj później."}
 
-# Domyślny routing do strony głównej
 @app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
@@ -128,7 +115,7 @@ def chat():
                 "temperature": 0.1,
                 "max_new_tokens": 100,
                 "repetition_penalty": 2.0,
-                "stop_sequence": "\n"  # Zmienione z '=====' na '\n'
+                "stop_sequence": "\n"
             }
         }
 
@@ -142,16 +129,16 @@ def chat():
         else:
             generated_text = "Brak odpowiedzi"
 
-        # Użycie html.unescape() do konwersji kodów HTML
+        # Konwersja kodów HTML na zwykły tekst
         generated_text = html.unescape(generated_text)
 
-        # Usuwanie fragmentów instrukcji i przekształcanie w odpowiedź
+        # Wyodrębnienie czystej odpowiedzi (część po "Odpowiedź:")
         if "Odpowiedź:" in generated_text:
             clean_response = generated_text.split("Odpowiedź:", 1)[1].strip()
         else:
-            clean_response = generated_text.replace(user_input, "").strip()
+            clean_response = generated_text
 
-        # Usunięcie niechcianych kodów HTML, takich jak &#039;
+        # Dodatkowa zamiana encji HTML (opcjonalnie, dla pewności)
         clean_response = clean_response.replace("&#039;", "'").replace("&quot;", "\"")
 
         # Zapis do bazy danych
@@ -163,16 +150,16 @@ def chat():
             return jsonify({"error": "Błąd zapisu do bazy danych"}), 500
 
         return jsonify({"response": clean_response})
-
+    
     except requests.exceptions.RequestException as e:
         logger.error("Błąd podczas komunikacji z API Hugging Face: " + str(e))
         return jsonify({"error": "Błąd podczas komunikacji z API Hugging Face", "details": str(e)}), 500
-
+    
     except Exception as e:
         error_details = traceback.format_exc()
         logger.error("Błąd serwera: " + error_details)
         return jsonify({"error": "Wewnętrzny błąd serwera", "details": str(e)}), 500
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 10000))  # Render automatycznie przypisze port
+    port = int(os.getenv("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
