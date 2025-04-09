@@ -100,22 +100,23 @@ def chat():
         if not user_input:
             return jsonify({"error": "Pusta wiadomość"}), 400
         
+        # Zmodyfikowany prompt
         prompt = (
-            "Instrukcje: Jesteś ekspertem ogrodniczym. Udzielaj krótkich, jednozdaniowych, konkretnych i rzeczowych odpowiedzi "
-            "na pytania dotyczące pielęgnacji roślin. Twoja odpowiedź powinna zaczynać się od słowa 'Odpowiedź:' i nie zawierać "
-            "powtórzeń pytania ani dodatkowych informacji.\n"
+            "Instrukcje: Jesteś ekspertem ogrodniczym. Odpowiadaj na pytania wyłącznie po polsku, używając naturalnego i przyjaznego języka. "
+            "Twoja odpowiedź musi zaczynać się od słowa 'Answer:' i zawierać tylko krótką, konkretną informację, bez powtarzania pytania i dodatkowych uwag. "
+            "Nie zawieraj żadnych tekstów w języku angielskim ani dodatkowych sekcji.\n"
             f"Pytanie: {user_input}\n"
             "=====\n"
-            "Odpowiedź:"
+            "Answer:"
         )
 
         payload = {
             "inputs": prompt,
             "parameters": {
-                "temperature": 0.1,
-                "max_new_tokens": 100,
-                "repetition_penalty": 2.0,
-                "stop_sequence": "\n"
+                "temperature": 0.3,      # Wyższa temperatura może dać większą różnorodność
+                "max_new_tokens": 150,   # Zwiększamy limit tokenów, aby odpowiedź była pełna
+                "repetition_penalty": 1.5,
+                "stop_sequence": "\n"    # Kończymy generowanie przy znaku nowej linii
             }
         }
 
@@ -129,16 +130,16 @@ def chat():
         else:
             generated_text = "Brak odpowiedzi"
 
-        # Konwersja kodów HTML na zwykły tekst
+        # Użycie html.unescape() do konwersji kodów HTML
         generated_text = html.unescape(generated_text)
 
-        # Wyodrębnienie czystej odpowiedzi (część po "Odpowiedź:")
-        if "Odpowiedź:" in generated_text:
-            clean_response = generated_text.split("Odpowiedź:", 1)[1].strip()
+        # Wyodrębnienie czystej odpowiedzi - szukamy części po "Answer:"
+        if "Answer:" in generated_text:
+            clean_response = generated_text.split("Answer:", 1)[1].strip()
         else:
             clean_response = generated_text
 
-        # Dodatkowa zamiana encji HTML (opcjonalnie, dla pewności)
+        # Zamiana pozostałych encji HTML
         clean_response = clean_response.replace("&#039;", "'").replace("&quot;", "\"")
 
         # Zapis do bazy danych
@@ -150,11 +151,11 @@ def chat():
             return jsonify({"error": "Błąd zapisu do bazy danych"}), 500
 
         return jsonify({"response": clean_response})
-    
+
     except requests.exceptions.RequestException as e:
         logger.error("Błąd podczas komunikacji z API Hugging Face: " + str(e))
         return jsonify({"error": "Błąd podczas komunikacji z API Hugging Face", "details": str(e)}), 500
-    
+
     except Exception as e:
         error_details = traceback.format_exc()
         logger.error("Błąd serwera: " + error_details)
