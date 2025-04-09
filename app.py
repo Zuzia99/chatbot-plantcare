@@ -102,12 +102,12 @@ def chat():
         
         # Zmodyfikowany prompt
         prompt = (
-            "Instrukcje: Jesteś ekspertem ogrodniczym. Odpowiadaj na pytania wyłącznie po polsku, używając naturalnego i przyjaznego języka. "
-            "Twoja odpowiedź musi zaczynać się od słowa 'Answer:' i zawierać tylko krótką, konkretną informację, bez powtarzania pytania i dodatkowych uwag. "
-            "Nie zawieraj żadnych tekstów w języku angielskim ani dodatkowych sekcji.\n"
+            "Instrukcje: Jesteś ekspertem ogrodniczym. Odpowiadaj na pytania wyłącznie po polsku, w sposób naturalny, przyjazny i zwięzły. "
+            "Twoja odpowiedź musi zaczynać się od słowa 'Odgrywanie:' i nie może zawierać żadnych dodatkowych informacji ani powtórzeń pytania. "
+            "Upewnij się, że Twoja odpowiedź jest logiczna, pełna i zakończona pełnymi zdaniami.\n"
             f"Pytanie: {user_input}\n"
             "=====\n"
-            "Answer:"
+            "Odgrywanie:"
         )
 
         payload = {
