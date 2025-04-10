@@ -103,11 +103,11 @@ def chat():
         # Zmodyfikowany prompt
         prompt = (
             "Instrukcje: Jesteś ekspertem ogrodniczym. Odpowiadaj na pytania wyłącznie po polsku, w sposób naturalny, przyjazny i zwięzły. "
-            "Twoja odpowiedź musi zaczynać się od słowa 'Odgrywanie:' i nie może zawierać żadnych dodatkowych informacji ani powtórzeń pytania. "
+            "Twoja odpowiedź musi zaczynać się od słowa 'Odp:' i nie może zawierać żadnych dodatkowych informacji ani powtórzeń pytania. "
             "Upewnij się, że Twoja odpowiedź jest logiczna, pełna i zakończona pełnymi zdaniami.\n"
             f"Pytanie: {user_input}\n"
             "=====\n"
-            "Odgrywanie:"
+            "Odp:"
         )
 
         payload = {
@@ -128,7 +128,7 @@ def chat():
         elif isinstance(response, list) and len(response) > 0:
             generated_text = response[0].get("generated_text", "").strip()
         else:
-            generated_text = "Brak odpowiedzi"
+            generated_text = "Nie działam jeszcze idealnie... jestem w trakcie metamorfozy. ;-) Zapraszam ponownie później."
 
         # Użycie html.unescape() do konwersji kodów HTML
         generated_text = html.unescape(generated_text)
