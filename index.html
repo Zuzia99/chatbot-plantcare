@@ -5,108 +5,178 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chatbot Roślinny</title>
   <style>
+    /* Reset marginesów i ustawienie box-sizing */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f0f0f0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7fafc;
+      padding: 7px;
     }
+    /* Styl okienka chat widgetu */
     #chat-container {
-      max-width: 600px;
-      margin: 0 auto;
       background-color: #fff;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      width: 350px; /* szerokość w trybie minimalnym */
+      border-radius: 10px;
+      padding: 9px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      position: relative;
+      transition: all 0.3s ease;
     }
+    /* Maksymalizowane okienko */
+    #chat-container.maximized {
+      width: 600px;
+    }
+    /* Przyciski sterujące - powiększanie/minimalizowanie */
+    #toggle-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 10;
+    }
+    /* Okienko wyświetlania wiadomości – większe domyślnie */
     #chat-log {
-      height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
+      border: 1px solid #e2e8f0;
+      background-color: #F5F5DE;
+      border-radius: 5px;
       padding: 10px;
-      margin-bottom: 15px;
-      background-color: #fafafa;
+      height: 300px;  /* wysokość w trybie minimalnym */
+      overflow-y: auto;
+      margin-bottom: 10px;
+      transition: height 0.3s ease;
+    }
+    /* W trybie maksymalnym zwiększamy wysokość okna czatu */
+    #chat-container.maximized #chat-log {
+      height: 450px;
     }
     .message {
-      margin: 10px 0;
-      padding: 8px;
-      border-radius: 5px;
+      margin: 8px 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      word-wrap: break-word;
     }
     .user-message {
-      background-color: #d0ebff;
+      background-color: #bee3f8;
       text-align: right;
     }
     .bot-message {
-      background-color: #d3f9d8;
+      background-color: #c6f6d5;
       text-align: left;
     }
-    #question {
-      width: 80%;
-      padding: 10px;
-      font-size: 16px;
+    footer {
+      display: flex;
+      gap: 5px;
+      align-items: flex-start; /* zapobiega rozciąganiu przycisku */
     }
-    #send-btn {
-      padding: 10px 20px;
+    /* Zamiana input na textarea, aby można było wpisać kilka linii tekstu */
+    #question {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 5px;
       font-size: 16px;
+      resize: none;
+      min-height: 80px; /* odpowiada około 3 liniom tekstu */
+    }
+    /* Zmniejszony przycisk Wyślij */
+    #send-btn {
+      padding: 8px 10px; /* mniejszy padding, dzięki czemu przycisk jest niższy */
+      font-size: 16px;
+      background-color: #0D8359;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
+      transition: background-color 0.3s ease;
+      align-self: center; /* pionowe wyrównanie przycisku w stopce */
+    }
+    #send-btn:hover {
+      background-color: #0B6b4A;
     }
   </style>
 </head>
 <body>
   <div id="chat-container">
-    <h2>Chatbot Roślinny</h2>
-    <div id="chat-log"></div>
-    <input type="text" id="question" placeholder="Wpisz swoje pytanie..." />
-    <button id="send-btn">Wyślij</button>
+    <button id="toggle-btn" title="Rozwiń/zmniejsz okno">+</button>
+    <main>
+      <div id="chat-log" aria-live="polite"></div>
+    </main>
+    <footer>
+      <textarea id="question" placeholder="Wpisz swoje pytanie..." aria-label="Twoje pytanie"></textarea>
+      <button id="send-btn">➤</button>
+    </footer>
   </div>
 
   <script>
-    const sendBtn = document.getElementById('send-btn');
-    const questionInput = document.getElementById('question');
-    const chatLog = document.getElementById('chat-log');
+    document.addEventListener('DOMContentLoaded', function() {
+      const chatContainer = document.getElementById('chat-container');
+      const toggleBtn = document.getElementById('toggle-btn');
+      const sendButton = document.getElementById('send-btn');
+      const questionInput = document.getElementById('question');
+      const chatLog = document.getElementById('chat-log');
 
-    async function sendMessage() {
-      const question = questionInput.value.trim();
-      if (!question) return;
+      // Obsługa powiększania/minimalizowania okienka
+      toggleBtn.addEventListener('click', function() {
+        chatContainer.classList.toggle('maximized');
+        let isMaximized = chatContainer.classList.contains('maximized');
+        toggleBtn.textContent = isMaximized ? '−' : '+';
+      });
 
-      // Dodaj wiadomość użytkownika do czatu
-      const userMsgDiv = document.createElement('div');
-      userMsgDiv.className = 'message user-message';
-      userMsgDiv.innerText = question;
-      chatLog.appendChild(userMsgDiv);
-      chatLog.scrollTop = chatLog.scrollHeight;
+      async function sendMessage() {
+        const question = questionInput.value.trim();
+        if (!question) return;
 
-      // Wyślij zapytanie do API (zakładamy, że Twój serwer działa na localhost:5000)
-      try {
-        const response = await fetch('http://localhost:10000/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: question })
-        });
-        const data = await response.json();
+        appendMessage('user-message', question);
 
-        // Dodaj odpowiedź bota do czatu
-        const botMsgDiv = document.createElement('div');
-        botMsgDiv.className = 'message bot-message';
-        botMsgDiv.innerText = data.response || 'Brak odpowiedzi.';
-        chatLog.appendChild(botMsgDiv);
+        // Tymczasowe zablokowanie interakcji
+        questionInput.value = '';
+        questionInput.disabled = true;
+        sendButton.disabled = true;
+
+        try {
+          const response = await fetch('http://localhost:10000/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: question })
+          });
+          if (!response.ok) {
+            throw new Error('Błąd sieciowy');
+          }
+          const data = await response.json();
+          appendMessage('bot-message', data.response || 'Brak odpowiedzi.');
+        } catch (error) {
+          console.error('Błąd podczas wysyłania zapytania:', error);
+          appendMessage('bot-message', 'Wystąpił problem z połączeniem. Spróbuj ponownie.');
+        }
+
+        // Ponowne udostępnienie interakcji
+        questionInput.disabled = false;
+        sendButton.disabled = false;
+        questionInput.focus();
+      }
+
+      function appendMessage(className, text) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message ' + className;
+        messageDiv.innerText = text;
+        chatLog.appendChild(messageDiv);
         chatLog.scrollTop = chatLog.scrollHeight;
-      } catch (error) {
-        console.error('Błąd podczas wysyłania zapytania:', error);
       }
 
-      // Wyczyść pole input
-      questionInput.value = '';
-      questionInput.focus();
-    }
-
-    // Wywołanie funkcji po kliknięciu przycisku
-    sendBtn.addEventListener('click', sendMessage);
-
-    // Wywołanie funkcji po naciśnięciu klawisza Enter
-    questionInput.addEventListener('keydown', function(e) {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
+      sendButton.addEventListener('click', sendMessage);
+      questionInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
     });
   </script>
 </body>
